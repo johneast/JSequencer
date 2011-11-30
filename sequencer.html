@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html encoding="utf-8" />
-		<title>Mixer</title>
+		<title>Sequencer</title>
 		
 		<link type="text/css" href="../jquery-ui-1.8.16.custom/css/cupertino/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
 		<script type="text/javascript" src="../jquery-ui-1.8.16.custom/js/jquery-1.6.2.min.js"></script>
@@ -13,11 +13,48 @@
 				// Page ready.
 				
 				// Set up the UI. Initialise the canvas and the mixer
+				var canvas = $("#seqBg")[0];
+				var context = canvas.getContext('2d');
+				
+				context.fillStyle = '#bbb';
+  				context.fillRect(0, 0, canvas.width, canvas.height);
+				
+				var trackHeight = 44;
+				for(var i = 0; i < 8; i++){
+					var y0 = i * trackHeight;
+					var y1 = y0 + trackHeight;
+					logDebug('i = '+i+', y0 = '+y0+', y1 = '+y1);
+					// Color fill for left hand panel of track
+					var gradient = context.createLinearGradient(0, y0, 0, y1 - 4);
+					gradient.addColorStop(0, '#6D92B0');
+					gradient.addColorStop(1, '#435F75');
+					context.fillStyle = gradient;
+					context.fillRect(0, y0, 125, trackHeight - 4);
+
+					// Small bar at the bottom of the track
+					context.fillStyle = '#ececec';
+					context.strokeStyle = '#888';
+					context.fillRect(0, y1 - 4 + 0.5, canvas.width, 3);
+					context.strokeRect(0, y1 - 4 + 0.5, canvas.width, 3);
+				}
 				
 				// Initialise the sequencer by loading the audio
+				
 			});
+			
+			function logDebug(s){
+				$('#debug').append(s+'</br>');
+			}
 		</script>
+		<style>
+			#seqBg { position: absolute; left: 0; top: 0; z-index: 0; }
+			#seqFg { position: absolute; left: 0; top: 0; z-index: 1; }
+			#debug { position: absolute; right: 0; width: 200px; }
+		</style>
 	</head>
 	<body>
+		<canvas id="seqBg" width="1024" height="600">Oh dear! I don't think it will work for you :(</canvas>
+		<canvas id="seqFg" width="1024" height="600"></canvas>
+		<div id="debug"></div>
 	</body>
 </html>
