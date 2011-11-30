@@ -7,13 +7,18 @@
 		<link type="text/css" href="../jquery-ui-1.8.16.custom/css/cupertino/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
 		<script type="text/javascript" src="../jquery-ui-1.8.16.custom/js/jquery-1.6.2.min.js"></script>
 		<script type="text/javascript" src="../jquery-ui-1.8.16.custom/js/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript" src="mixer.js"></script>
 		<script type="text/javascript" src="sequencer.js"></script>
+		<script type="text/javascript" src="sequencerView.js"></script>
+		
 		<script type="text/javascript">
+			// Everything hooks into the sequencer.
+			var sequencer = null;
 			$(function(){
 				// Page ready.
 				
 				// Set up the UI. Initialise the canvas and the mixer
-				var canvas = $("#seqBg")[0];
+				/*var canvas = $("#seqBg")[0];
 				var context = canvas.getContext('2d');
 				
 				context.fillStyle = '#bbb';
@@ -36,9 +41,14 @@
 					context.strokeStyle = '#888';
 					context.fillRect(0, y1 - 4 + 0.5, canvas.width, 3);
 					context.strokeRect(0, y1 - 4 + 0.5, canvas.width, 3);
-				}
+				}*/
 				
 				// Initialise the sequencer by loading the audio
+				
+				sequencer = new Sequencer();
+				sequencer.attachView(new SequencerView());
+				
+				sequencer.addTrack('channel1','../yourloveremains.mp3');
 				
 			});
 			
@@ -49,7 +59,7 @@
 		<style>
 			#seqBg { position: absolute; left: 0; top: 0; z-index: 0; }
 			#seqFg { position: absolute; left: 0; top: 0; z-index: 1; }
-			#debug { position: absolute; right: 0; width: 200px; }
+			#debug { position: absolute; right: 0; width: 200px; z-index: 10; }
 		</style>
 	</head>
 	<body>
