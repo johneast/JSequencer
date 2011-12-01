@@ -15,23 +15,49 @@ function Sequencer(){
 	this.playStartTime = 0;
 	
 	this.view = null;
+	
+	this.eventListeners = new Array();
 }
 
 Sequencer.prototype.attachView = function(sequencerView){
 	this.view = sequencerView;
-	sequencerView.sequencer = this;
+	sequencerView.setSequencer(this);
+}
+
+Sequencer.prototype.addEventListener = function(type, fn){
+	var l = this.eventListeners[type];
+	if(!l){
+		l = new Array();
+		this.eventListeners[type] = l;
+	}
+	l.push(fn);
+}
+
+Sequencer.prototype.notifyEventListeners = function(e){
+	var l = this.eventListeners[e.type];
+	if(l){
+		for(var i = 0;i < l.length; i++){
+			l[i](e);
+		}
+	}
 }
 
 Sequencer.prototype.addTrack = function(trackName, url){
 	var track = new SequencerTrack(this, trackName, this.tracks.length);
 	this.tracks.push(track);
+	
 	this.view.addTrack(track);
+	// Trigger the track added event
+	var e = {type:"trackAdded", data:track };
+	this.notifyEventListeners(e);
+
+	// Go get the audio data
 	track.loadAudio(url);
 }
 
 Sequencer.prototype.trackLoadedAudio = function(track){
 	// The track has loaded audio.
-
+	logDebug("Track "+track.trackName+" ready to play");
 	
 }
 
