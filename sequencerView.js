@@ -85,20 +85,42 @@ SequencerView.prototype.redrawTracks = function(){
 	for(var i =0; i < this.trackViews.length; i++){
 		var st = this.trackViews[i];
 		if(st.dirty){
-			st.redraw(0, (st.height * i) + this.topBarHeight, this.bgContext);
+			st.redraw(this.bgContext);
 		}
 	}	
 }
 
-Sequencer.prototype.setSequencer = function(sequencer){
+SequencerView.prototype.setSequencer = function(sequencer){
 	this.sequencer = sequencer;
 	// Add event listeners here.
+	sv = this;
+	
+	sequencer.addEventListener("trackChanged", function(e){
+		sv.trackChanged(e.data);
+	});
 }
 
 SequencerView.prototype.addTrack = function(sequencerTrack){
 	var trackView = new SequencerTrackView(this, sequencerTrack);
 	this.trackViews.push(trackView);
+	trackView.left = 0;
+	trackView.top = trackView.height * (this.trackViews.length - 1) + this.topBarHeight;
 	this.redrawTracks();
+}
+
+SequencerView.prototype.trackChanged = function(sequencerTrack){
+	var tv = this.findViewForTrack(sequencerTrack);
+	if(tv){
+		tv.redraw(this.bgContext);
+	}
+}
+
+SequencerView.prototype.findViewForTrack = function(sequencerTrack){
+	for(var i = 0; i < this.trackViews.length; i++){
+		if(this.trackViews[i].track = sequencerTrack){
+			return this.trackViews[i];
+		}
+	}
 }
 
 // Object responsible for drawing a sequencer track
@@ -109,6 +131,9 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	
 	this.dirty = true;
 	
+	this.left = 0;
+	this.top = 0;
+	
 	this.trackPanelGrdStart = '#6D92B0';
 	this.trackPanelGrdEnd = '#435F75';
 	this.height = 44;
@@ -116,20 +141,65 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	
 }
 
-SequencerTrackView.prototype.redraw = function(x, y, ctx){
+SequencerTrackView.prototype.redraw = function(ctx){
 
 	// Draw the panel on the left
-	var panelBtm = y + this.height - 4;
-	var gradient = ctx.createLinearGradient(x, y, x, panelBtm );
+	var panelBtm = this.top + this.height - 4;
+	var gradient = ctx.createLinearGradient(this.left, this.top, this.left, panelBtm );
 	gradient.addColorStop(0, this.trackPanelGrdStart);
 	gradient.addColorStop(1, this.trackPanelGrdEnd);
 	ctx.fillStyle = gradient;
-	ctx.fillRect(x, y, this.panelWidth, this.height - 4);
+	ctx.fillRect(this.left, this.top, this.panelWidth, this.height - 4);
 	
 	// Small bar at the bottom of the track
 	ctx.fillStyle = '#ececec';
 	ctx.strokeStyle = '#888';
-	ctx.fillRect(x, panelBtm + 0.5, this.sequencerView.width, 3);
-	ctx.strokeRect(x, panelBtm + 0.5, this.sequencerView.width, 3);
+	ctx.fillRect(this.left, panelBtm + 0.5, this.sequencerView.width, 3);
+	ctx.strokeRect(this.left, panelBtm + 0.5, this.sequencerView.width, 3);
+	
+	// Draw the audio data.
+	if(this.track.dataBuffer && this.track.dataBuffer.length > 0){
+		var pcm = this.track.dataBuffer.getChannelData(0);
+		var pcmLength = pcm.length;
+		
+		var x = this.left + this.panelWidth;
+		var wvfmBottom = 0;
+		var wvfmTop = 0;
+		var wvfmMid = this.top + ((this.height - 3) / 2);
+		var sampleCount = 0;
+		var minVal = 0;
+		var maxVal = 0;
+		var currentSample = 0;
+		var samplesPerPixel = pcmLength / (this.sequencerView.width - this.panelWidth);
+		var yScale = 1 / ((this.height - 3) / 2);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = '#000';
+		ctx.beginPath();
+		for(var i = 0; i < pcmLength; i ++){
+			currentSample = pcm[i];
+			if(currentSample < minVal){
+				minVal = currentSample;
+			}
+			
+			if(currentSample > maxVal){
+				maxVal = currentSample;
+			}
+			
+			if(sampleCount++ >= samplesPerPixel){
+				wvfmBottom = wvfmMid + (minVal / yScale);
+				wvfmTop = wvfmMid + (maxVal / yScale);
+				ctx.moveTo(x + 0.5, wvfmBottom);
+				ctx.lineTo(x + 0.5, wvfmTop);
+				
+				sampleCount = 0;
+				minVal = 0;
+				maxVal = 0;
+				x++;
+			}
+		}
+		ctx.stroke();
+		ctx.closePath();
+	}
+	
 	dirty = false;
 }

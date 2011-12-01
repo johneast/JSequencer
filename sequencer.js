@@ -57,7 +57,11 @@ Sequencer.prototype.addTrack = function(trackName, url){
 
 Sequencer.prototype.trackLoadedAudio = function(track){
 	// The track has loaded audio.
-	logDebug("Track "+track.trackName+" ready to play");
+	var trackLength = track.dataBuffer.duration;
+	if(trackLength > this.songLength){
+		this.songLength = trackLength;
+	}
+	this.notifyEventListeners({type:"trackChanged", data:track});
 	
 }
 
@@ -65,33 +69,32 @@ Sequencer.prototype.trackLoadedAudio = function(track){
 // Calls 'start' on all the tracks in the sequencer
 Sequencer.prototype.play = function(){
 	if(!this.playing){
-		this.playing = true;
-		// re create all the source buffer nodes and connect to the input of the mixer
-		for(var i = 0; i < this.tracks.length; i++){
-			this.tracks[i].createBufferSource();
-			this.mixer.connectSequenceTrack(i,this.tracks[i]);
-		}
 		
 		// Get the playStartTime
-		this.playStartTime = this.audio.currentTime;
-		
 		var playDuration = this.songLength - this.songPos;
 		if(playDuration > 0){
+			this.playing = true;
+
+			// re create all the source buffer nodes and connect to the input of the mixer
+			for(var i = 0; i < this.tracks.length; i++){
+				this.tracks[i].createBufferSource();
+				this.mixer.connectSequencerTrack(i,this.tracks[i]);
+			}
+
+			this.playStartTime = this.audio.currentTime;
 			// Start all the buffers running
 			for(var i = 0; i < this.tracks.length; i++){
 				this.tracks[i].start(this.songPos, playDuration);
 			}
 		}
-		
-		// Start off any timers.
-		
-		
 	}
 }
 
 // Stops playback
 Sequencer.prototype.stop = function(){
 	if(this.playing){
+		this.playing = false;
+		this.songPos = this.songPos + (this.audio.currentTime - this.playStartTime);
 		for(var i = 0; i < this.tracks.length; i++){
 			this.tracks[i].stop();
 		}
@@ -102,6 +105,16 @@ Sequencer.prototype.stop = function(){
 Sequencer.prototype.rewind = function(){
 	this.stop();
 	this.songPos = 0;
+}
+
+Sequencer.prototype.getSongPos = function(){
+	if(!this.playing){
+		return this.songPos;
+	}else{
+		var timeSinceStart = this.audio.currentTime - this.playStartTime;
+		
+		return this.songPos + timeSinceStart;
+	}
 }
 
 // A sequencer track holds the audio data
@@ -127,7 +140,11 @@ function SequencerTrack(sequencer, trackName, trackNumber){
 }
 
 SequencerTrack.prototype.start = function(offset, duration){
-	this.bufferSourceNode.noteOn(0, offset, duration);
+	// Seems there is a bug in noteGrainOn. If the offset is zero then the buffer doesn't play
+	/*if(offset == 0){
+		offset = 1;
+	}*/
+	this.bufferSourceNode.noteGrainOn(1, offset, duration);
 }
 
 SequencerTrack.prototype.stop = function(){

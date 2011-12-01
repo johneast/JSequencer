@@ -55,16 +55,35 @@
 			function logDebug(s){
 				$('#debug').append(s+'</br>');
 			}
+			
+			function play(){
+				sequencer.play();
+			}
+			
+			function stop(){
+				sequencer.stop();
+			}
+			
+			function rewind(){
+				sequencer.rewind();
+			}
 		</script>
 		<style>
 			#seqBg { position: absolute; left: 0; top: 0; z-index: 0; }
 			#seqFg { position: absolute; left: 0; top: 0; z-index: 1; }
 			#debug { position: absolute; right: 0; width: 200px; z-index: 10; }
+			#buttons { position: absolute; left: 10px; top: 605px; }
 		</style>
 	</head>
 	<body>
 		<canvas id="seqBg" width="1024" height="600">Oh dear! I don't think it will work for you :(</canvas>
 		<canvas id="seqFg" width="1024" height="600"></canvas>
 		<div id="debug"></div>
+		<div id="buttons">
+			<button id="playBtn" type="button" onclick="play()">Play</button>
+			<button id="stopBtn" type="button" onclick="stop()">Stop</button>
+			<button id="rewBtn" type="button" onclick="rewind()">Rewind</button>
+		
+		</div>
 	</body>
 </html>

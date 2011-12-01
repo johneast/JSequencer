@@ -4,17 +4,17 @@ function Mixer(audioContext){
 	this.channels = new Array(this.numberOfChannels);
 }
 
-Mixer.prototype.getSequencerTrack = function(number){
+Mixer.prototype.getMixerChannel = function(number){
+	var mc = null;
 	if(number < this.numberOfChannels){
-		var mc = this.channels[number];
+		mc = this.channels[number];
 		if(!mc){
 			mc = new MixerChannel(this);
 			this.channels[number] = mc;
 			mc.output.connect(this.audio.destination);
-			return mc;
 		}
 	}
-	return nil;
+	return mc;
 }
 
 
