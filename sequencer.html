@@ -14,6 +14,8 @@
 		<script type="text/javascript">
 			// Everything hooks into the sequencer.
 			var sequencer = null;
+			var sequencerView = null;
+			var uiTime;
 			$(function(){
 				// Page ready.
 				
@@ -46,11 +48,31 @@
 				// Initialise the sequencer by loading the audio
 				
 				sequencer = new Sequencer();
-				sequencer.attachView(new SequencerView());
+				sequencerView = new SequencerView();
+				sequencer.attachView(sequencerView);
 				
 				sequencer.addTrack('channel1','../yourloveremains.mp3');
+				
+				
+				// Start the ui timer
+				startTimer();
 
 			});
+			
+			function startTimer(){
+				// Try to get a consistant 60fps
+				var start = new Date().getTime(),
+				uiTime = 0;
+			 
+				function timer(){
+			 
+					uiTime += 15;
+					var diff = (new Date().getTime() - start) - uiTime;
+					sequencerView.update();
+					window.setTimeout(timer, (15 - diff));
+				}
+				window.setTimeout(timer, 15);
+			}
 			
 			function logDebug(s){
 				$('#debug').append(s+'</br>');

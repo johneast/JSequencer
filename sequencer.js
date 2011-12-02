@@ -140,11 +140,8 @@ function SequencerTrack(sequencer, trackName, trackNumber){
 }
 
 SequencerTrack.prototype.start = function(offset, duration){
-	// Seems there is a bug in noteGrainOn. If the offset is zero then the buffer doesn't play
-	/*if(offset == 0){
-		offset = 1;
-	}*/
-	this.bufferSourceNode.noteGrainOn(1, offset, duration);
+	// play now, from the current position for the remaining duration - 1 sample (ish)
+	this.bufferSourceNode.noteGrainOn(0, offset, duration - 0.00003);
 }
 
 SequencerTrack.prototype.stop = function(){

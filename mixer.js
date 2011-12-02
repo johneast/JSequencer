@@ -29,11 +29,18 @@ function MixerChannel(mixer){
 
 	this.mixer = mixer;
 	
-	this.panner = this.mixer.audio.createPanner();
+	//this.panner = this.mixer.audio.createPanner();
+	
+	// Low pass filter
+	this.lpFilter = this.mixer.audio.createBiquadFilter();
+	this.lpFilter.type = this.lpFilter.LOWPASS;
+	this.lpFilter.frequency.value = 100;
 	this.volume = this.mixer.audio.createGainNode();
 	
-	this.panner.connect(this.volume);
+	this.lpFilter.connect(this.volume);
+	//this.panner.connect(this.volume);
 	
-	this.input = this.panner;
+	//this.input = this.panner;
+	this.input = this.lpFilter;
 	this.output = this.volume;
 }

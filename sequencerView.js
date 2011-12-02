@@ -42,6 +42,11 @@ function SequencerView(){
 	this.topBarGrdEnd = '#BDBEBF';
 	this.topBarUnderline = '#919191';
 	this.topBarHeight = 12;
+	
+	this.cursorColor = '#FF7700';
+	this.currentCursorPos = 0;
+	
+	
 	this.redraw();
 }
 
@@ -121,6 +126,42 @@ SequencerView.prototype.findViewForTrack = function(sequencerTrack){
 			return this.trackViews[i];
 		}
 	}
+}
+
+SequencerView.prototype.redrawCursor = function(){
+	// Calculate the position of the cursor based on the song position
+	if(this.sequencer && this.sequencer.songLength > 0){
+		// Make sure there is at least 1 track as well.
+		if(this.trackViews.length > 0){
+			var songWidth = this.width - this.trackViews[0].panelWidth;
+			var songStart = this.trackViews[0].panelWidth;
+			var xScale = this.sequencer.songLength / songWidth;
+			
+			var newCursorPos = Math.floor(this.sequencer.getSongPos() / xScale) + 0.5 + songStart; // round to an integer
+			if(newCursorPos != this.currentCursorPos){
+				// Redraw the cursor.
+				// Reset the canvas width in order to clear the canvas
+				this.fgCanvas.width = this.width;
+				this.fgContext.strokeStyle = this.cursorColor;
+				this.fgContext.beginPath();
+				this.fgContext.moveTo(newCursorPos, this.trackViews[0].top);
+				this.fgContext.lineTo(newCursorPos, this.height);
+				this.fgContext.stroke();
+				this.fgContext.closePath();
+				this.currentCursorPos = newCursorPos;
+			}
+		}
+	}	
+}
+
+SequencerView.prototype.update = function(){
+	// Called regularly by external timers.
+	
+	// Update any 'dirty' tracks
+	this.redrawTracks();
+	
+	// Draw the song cursor line
+	this.redrawCursor();
 }
 
 // Object responsible for drawing a sequencer track
