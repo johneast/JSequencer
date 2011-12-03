@@ -51,9 +51,13 @@
 				sequencerView = new SequencerView();
 				sequencer.attachView(sequencerView);
 				
-				sequencer.addTrack('channel1','../yourloveremains.mp3');
-				
-				
+				//sequencer.addTrack('channel1','../yourloveremains.mp3');
+				sequencer.addTrack('drums','music/drums.ogg');
+				sequencer.addTrack('bass', 'music/bass.ogg');
+				sequencer.addTrack('gtr1','music/gtr1.ogg');
+				sequencer.addTrack('gtr2','music/gtr2');
+				sequencer.addTrack('lead gtr', 'music/lead-gtr.ogg');
+				sequencer.addTrack('acoustic','music/acoustic.ogg');
 				// Start the ui timer
 				startTimer();
 
@@ -93,7 +97,7 @@
 		<style>
 			#seqBg { position: absolute; left: 0; top: 0; z-index: 0; }
 			#seqFg { position: absolute; left: 0; top: 0; z-index: 1; }
-			#debug { position: absolute; right: 0; width: 200px; z-index: 10; }
+			#debug { position: absolute; right: 0; width: 200px; z-index: 10; font-size: 10px; }
 			#buttons { position: absolute; left: 10px; top: 605px; }
 		</style>
 	</head>

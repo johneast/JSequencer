@@ -84,7 +84,7 @@ Sequencer.prototype.play = function(){
 			this.playStartTime = this.audio.currentTime;
 			// Start all the buffers running
 			for(var i = 0; i < this.tracks.length; i++){
-				this.tracks[i].start(this.songPos, playDuration);
+				this.tracks[i].start(this.songPos);
 			}
 		}
 	}
@@ -117,6 +117,16 @@ Sequencer.prototype.getSongPos = function(){
 	}
 }
 
+Sequencer.prototype.setSongPos = function(newSongPos){
+	var wasPlaying = this.playing;
+	this.stop();
+	this.songPos = newSongPos;
+	if(wasPlaying){
+		this.play();
+	}
+	
+}
+
 // A sequencer track holds the audio data
 function SequencerTrack(sequencer, trackName, trackNumber){
 	this.sequencer = sequencer;
@@ -139,7 +149,9 @@ function SequencerTrack(sequencer, trackName, trackNumber){
 	
 }
 
-SequencerTrack.prototype.start = function(offset, duration){
+SequencerTrack.prototype.start = function(offset){
+
+	var duration = this.dataBuffer.duration - offset;
 	// play now, from the current position for the remaining duration - 1 sample (ish)
 	this.bufferSourceNode.noteGrainOn(0, offset, duration - 0.00003);
 }

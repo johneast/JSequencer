@@ -29,6 +29,12 @@ function SequencerView(){
 	this.fgCanvas = $('#seqFg')[0];
 	this.fgContext = this.fgCanvas.getContext('2d');
 	
+	var self = this;
+	// Event handlers
+	$('#seqFg').mousedown(function(event){
+		self.canvasClick(event);
+	});
+		
 	// Set the canvas size.
 	this.width = 1024;
 	this.height = 600;
@@ -38,16 +44,44 @@ function SequencerView(){
 	this.bgColor = '#bbb';
 	
 	this.topBarGrdStart = '#F2F2F2';
-	this.topBarGrdMid = '#C9C9C9';
-	this.topBarGrdEnd = '#BDBEBF';
+	this.topBarGrdMid = '#CECECE';
+	this.topBarGrdEnd = '#ADAEAF';
 	this.topBarUnderline = '#919191';
 	this.topBarHeight = 12;
+	this.trackPanelWidth = 125;
 	
 	this.cursorColor = '#FF7700';
 	this.currentCursorPos = 0;
 	
 	
 	this.redraw();
+}
+
+SequencerView.prototype.canvasClick = function(event){
+	// Where was the mouse clicked?
+	
+	var y = event.offsetY;
+	var x = event.offsetX;
+	// was it in the top bar?
+	if(y < this.topBarHeight){
+		this.topBarClick(x);
+	}
+}
+
+SequencerView.prototype.topBarClick = function(x){
+	// Shoud we change the song position
+	if(x >= this.trackPanelWidth){
+		var barClickPos = x - this.trackPanelWidth;
+		
+		var songDuration = this.sequencer.songLength;
+		
+		var vv = songDuration / (this.width - this.trackPanelWidth);
+		
+		var newSongPos = vv * barClickPos;
+		
+		this.sequencer.setSongPos(newSongPos);
+		
+	}
 }
 
 SequencerView.prototype.setSequencer = function(sequencer){
@@ -89,7 +123,7 @@ SequencerView.prototype.redraw = function(){
 SequencerView.prototype.redrawTracks = function(){
 	for(var i =0; i < this.trackViews.length; i++){
 		var st = this.trackViews[i];
-		if(st.dirty){
+		if(st.dirty == true){
 			st.redraw(this.bgContext);
 		}
 	}	
@@ -106,10 +140,11 @@ SequencerView.prototype.setSequencer = function(sequencer){
 }
 
 SequencerView.prototype.addTrack = function(sequencerTrack){
+	logDebug('Adding track '+sequencerTrack.trackName);
 	var trackView = new SequencerTrackView(this, sequencerTrack);
 	this.trackViews.push(trackView);
 	trackView.left = 0;
-	trackView.top = trackView.height * (this.trackViews.length - 1) + this.topBarHeight;
+	trackView.trackTop = trackView.height * (this.trackViews.length - 1) + this.topBarHeight;
 	this.redrawTracks();
 }
 
@@ -122,7 +157,7 @@ SequencerView.prototype.trackChanged = function(sequencerTrack){
 
 SequencerView.prototype.findViewForTrack = function(sequencerTrack){
 	for(var i = 0; i < this.trackViews.length; i++){
-		if(this.trackViews[i].track = sequencerTrack){
+		if(this.trackViews[i].track == sequencerTrack){
 			return this.trackViews[i];
 		}
 	}
@@ -144,7 +179,7 @@ SequencerView.prototype.redrawCursor = function(){
 				this.fgCanvas.width = this.width;
 				this.fgContext.strokeStyle = this.cursorColor;
 				this.fgContext.beginPath();
-				this.fgContext.moveTo(newCursorPos, this.trackViews[0].top);
+				this.fgContext.moveTo(newCursorPos, this.trackViews[0].trackTop);
 				this.fgContext.lineTo(newCursorPos, this.height);
 				this.fgContext.stroke();
 				this.fgContext.closePath();
@@ -173,24 +208,26 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	this.dirty = true;
 	
 	this.left = 0;
-	this.top = 0;
+	this.trackTop = 0;
 	
 	this.trackPanelGrdStart = '#6D92B0';
 	this.trackPanelGrdEnd = '#435F75';
 	this.height = 44;
-	this.panelWidth = 125;
+	this.panelWidth = sequencerView.trackPanelWidth;
 	
 }
 
 SequencerTrackView.prototype.redraw = function(ctx){
-
+	logDebug('Drawing track '+this.track.trackName);
+	logDebug('    - top = '+this.trackTop);
+	
 	// Draw the panel on the left
-	var panelBtm = this.top + this.height - 4;
-	var gradient = ctx.createLinearGradient(this.left, this.top, this.left, panelBtm );
+	var panelBtm = this.trackTop + this.height - 4;
+	var gradient = ctx.createLinearGradient(this.left, this.trackTop, this.left, panelBtm );
 	gradient.addColorStop(0, this.trackPanelGrdStart);
 	gradient.addColorStop(1, this.trackPanelGrdEnd);
 	ctx.fillStyle = gradient;
-	ctx.fillRect(this.left, this.top, this.panelWidth, this.height - 4);
+	ctx.fillRect(this.left, this.trackTop, this.panelWidth, this.height - 4);
 	
 	// Small bar at the bottom of the track
 	ctx.fillStyle = '#ececec';
@@ -206,7 +243,7 @@ SequencerTrackView.prototype.redraw = function(ctx){
 		var x = this.left + this.panelWidth;
 		var wvfmBottom = 0;
 		var wvfmTop = 0;
-		var wvfmMid = this.top + ((this.height - 3) / 2);
+		var wvfmMid = this.trackTop + ((this.height - 3) / 2);
 		var sampleCount = 0;
 		var minVal = 0;
 		var maxVal = 0;
@@ -241,6 +278,5 @@ SequencerTrackView.prototype.redraw = function(ctx){
 		ctx.stroke();
 		ctx.closePath();
 	}
-	
-	dirty = false;
+	this.dirty = false;
 }
