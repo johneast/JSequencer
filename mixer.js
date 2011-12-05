@@ -17,6 +17,11 @@ Mixer.prototype.getMixerChannel = function(number){
 	return mc;
 }
 
+Mixer.prototype.attachView = function(mixerView){
+	this.mixerView = mixerView;
+	this.mixerView.setMixer(this);
+}
+
 
 Mixer.prototype.connectSequencerTrack = function(channelNumber, sequencerTrack){
 	var mc = this.getMixerChannel(channelNumber);

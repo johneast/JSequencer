@@ -24,6 +24,21 @@ function SequencerView(){
 	this.sequencer = null;
 	this.trackViews = new Array();
 	
+	// Some size and color constants
+	this.bgColor = '#bbb';
+	
+	this.topBarGrdStart = '#F2F2F2';
+	this.topBarGrdMid = '#CECECE';
+	this.topBarGrdEnd = '#ADAEAF';
+	this.topBarUnderline = '#919191';
+	this.topBarHeight = 12;
+	this.trackPanelWidth = 125;
+	this.trackHeight = 44;
+	
+	this.cursorColor = '#FF7700';
+	
+	
+	
 	this.bgCanvas = $('#seqBg')[0];
 	this.bgContext = this.bgCanvas.getContext('2d');
 	this.fgCanvas = $('#seqFg')[0];
@@ -37,20 +52,10 @@ function SequencerView(){
 		
 	// Set the canvas size.
 	this.width = 1024;
-	this.height = 600;
+	this.height = this.trackHeight * 8 + this.topBarHeight;
 
 	// Some constants
 	
-	this.bgColor = '#bbb';
-	
-	this.topBarGrdStart = '#F2F2F2';
-	this.topBarGrdMid = '#CECECE';
-	this.topBarGrdEnd = '#ADAEAF';
-	this.topBarUnderline = '#919191';
-	this.topBarHeight = 12;
-	this.trackPanelWidth = 125;
-	
-	this.cursorColor = '#FF7700';
 	this.currentCursorPos = 0;
 	
 	
@@ -212,7 +217,7 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	
 	this.trackPanelGrdStart = '#6D92B0';
 	this.trackPanelGrdEnd = '#435F75';
-	this.height = 44;
+	this.height = this.sequencerView.trackHeight;
 	this.panelWidth = sequencerView.trackPanelWidth;
 	
 }
@@ -279,4 +284,47 @@ SequencerTrackView.prototype.redraw = function(ctx){
 		ctx.closePath();
 	}
 	this.dirty = false;
+}
+
+function MixerView(numberOfChannels){
+	this.mixer = null;
+	
+	// Set up the UI
+	var self = this;
+	
+	this.channelViews = new Array();
+	for(var i = 0; i < numberOfChannels; i++){
+		var cv = new MixerChannelView(i,this);
+		this.channelViews.push(cv);
+	}
+
+}	
+
+MixerView.prototype.setMixer = function(mixer){
+	this.mixer = mixer;
+}
+
+function MixerChannelView(channelId, mixerView){
+	this.channelId = channelId;
+	this.mixerView = mixerView;
+	
+	var self = this;	
+	// Setup the slider on the page and catch the event for the slider changing
+	$("#mixerChannel"+this.channelId+" > span").each(function() {
+		// intiialise at 80%
+		$( this ).empty().slider({
+			value: 80,
+			range: "min",
+			animate: true,
+			orientation: "vertical",
+			slide: function( event, ui ) {
+				self.sliderSetVolume(ui.value);
+			}
+		});
+	});
+}
+
+MixerChannelView.prototype.sliderSetVolume = function(value){
+	// Slider value changed
+	this.mixerView.mixer.setChannelVolume(this.channelId, value / 10);
 }

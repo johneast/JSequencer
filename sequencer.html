@@ -51,6 +51,8 @@
 				sequencerView = new SequencerView();
 				sequencer.attachView(sequencerView);
 				
+				sequencer.mixer.attachView(new MixerView(8));
+				
 				//sequencer.addTrack('channel1','../yourloveremains.mp3');
 				sequencer.addTrack('drums','music/drums.ogg');
 				sequencer.addTrack('bass', 'music/bass.ogg');
@@ -98,7 +100,12 @@
 			#seqBg { position: absolute; left: 0; top: 0; z-index: 0; }
 			#seqFg { position: absolute; left: 0; top: 0; z-index: 1; }
 			#debug { position: absolute; right: 0; width: 200px; z-index: 10; font-size: 10px; }
-			#buttons { position: absolute; left: 10px; top: 605px; }
+			#buttons { position: absolute; left: 10px; top: 365px; }
+			#mixer span { height:120px; float:left; margin:15px; }
+			#mixerContainer { margin: 1em; position: absolute; top: 400px; left: 10px; }
+			.channel {float: left; padding: 0; margin: 0 0 0 -1; border: solid 1px #efefef; }
+			
+			
 		</style>
 	</head>
 	<body>
@@ -109,7 +116,36 @@
 			<button id="playBtn" type="button" onclick="play()">Play</button>
 			<button id="stopBtn" type="button" onclick="stop()">Stop</button>
 			<button id="rewBtn" type="button" onclick="rewind()">Rewind</button>
-		
+		</div>
+		<div id="mixerContainer" class="ui-widget-content ui-corner-all">
+			<div id="mixer">
+				<!-- Individual channel strips -->
+				<div id="mixerChannel1" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel2" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel3" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel4" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel5" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel6" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel7" class="channel">
+					<span>80</span>
+				</div>
+				<div id="mixerChannel8" class="channel">
+					<span>80</span>
+				</div>
+				<!-- Eq and other settings for each channel -->
+			</div>
 		</div>
 	</body>
 </html>
