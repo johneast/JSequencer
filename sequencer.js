@@ -17,6 +17,8 @@ function Sequencer(){
 	this.view = null;
 	
 	this.eventListeners = new Array();
+	
+	this.selectedTrack = 0;
 }
 
 Sequencer.prototype.attachView = function(sequencerView){
@@ -50,9 +52,31 @@ Sequencer.prototype.addTrack = function(trackName, url){
 	// Trigger the track added event
 	var e = {type:"trackAdded", data:track };
 	this.notifyEventListeners(e);
+	
+	// If no track is selected, then select this one.
+	if(!this.selected){
+		this.selectedTrack = track;
+		track.selected = true;
+	}
 
 	// Go get the audio data
 	track.loadAudio(url);
+}
+
+Sequencer.prototype.selectTrack = function(trackIndex){
+	if(trackIndex < this.tracks.length && trackIndex > 0){
+		var newSelection = this.tracks[trackIndex];
+		if(newSelection != this.selectedTrack){
+			if(this.selectedTrack){
+				this.selectedTrack.selected = false;
+				this.notifyEventListeners({type:"trackUnselected", data:this.selectedTrack });
+			}
+			
+			this.selectedTrack = newSelection;
+			this.selectedTrack.selected = true;
+			this.notifyEventListeners({type:"trackSelected", data:this.selectedTrack});
+		}
+	}
 }
 
 Sequencer.prototype.trackLoadedAudio = function(track){
@@ -133,6 +157,7 @@ function SequencerTrack(sequencer, trackName, trackNumber){
 	this.dataUrl = "";
 	this.trackName = trackName;
 	this.trackNumber = trackNumber;
+	this.selected = false;
 	
 	// The audio data.
 	this.dataBuffer = 0;
@@ -185,8 +210,6 @@ SequencerTrack.prototype.loadAudio = function(url){
 		// Tell the sequencer that the track has loaded the data
 		track.sequencer.trackLoadedAudio(track);
 	}
-
 	request.send();
-
 }
 

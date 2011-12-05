@@ -34,6 +34,7 @@ function SequencerView(){
 	this.topBarHeight = 12;
 	this.trackPanelWidth = 125;
 	this.trackHeight = 44;
+	this.trackSeparatorHeight = 4;
 	
 	this.cursorColor = '#FF7700';
 	
@@ -70,6 +71,9 @@ SequencerView.prototype.canvasClick = function(event){
 	// was it in the top bar?
 	if(y < this.topBarHeight){
 		this.topBarClick(x);
+	}else if(x < this.trackPanelWidth) {
+		// Clicked in the panels on the left.
+		this.trackPanelClick(y);
 	}
 }
 
@@ -89,9 +93,18 @@ SequencerView.prototype.topBarClick = function(x){
 	}
 }
 
-SequencerView.prototype.setSequencer = function(sequencer){
-	this.sequencer = sequencer;
-	// Attach event handlers for redrawing ?
+SequencerView.prototype.trackPanelClick = function(y){
+	// Find which track was clicked
+	for(var i = 0; i < this.trackViews.length; i++){
+		var tv = this.trackViews[i];
+		if(y >= tv.trackTop && y < (tv.trackTop + (tv.height - this.trackSeparatorHeight))){
+			this.sequencer.selectTrack(i);
+		}
+	}
+}
+
+SequencerView.prototype.trackSelectionChange = function(e){
+	alert("Track selection change");
 }
 
 SequencerView.prototype.redraw = function(){
@@ -141,6 +154,10 @@ SequencerView.prototype.setSequencer = function(sequencer){
 	
 	sequencer.addEventListener("trackChanged", function(e){
 		sv.trackChanged(e.data);
+	});
+	
+	this.sequencer.addEventListener("trackSelected", function(e){
+		sv.trackSelectionChange(e);
 	});
 }
 
@@ -218,7 +235,8 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	this.trackPanelGrdStart = '#6D92B0';
 	this.trackPanelGrdEnd = '#435F75';
 	this.height = this.sequencerView.trackHeight;
-	this.panelWidth = sequencerView.trackPanelWidth;
+	this.panelWidth = this.sequencerView.trackPanelWidth;
+	this.separatorHeight = this.sequencerView.trackSeparatorHeight;
 	
 }
 
@@ -232,7 +250,13 @@ SequencerTrackView.prototype.redraw = function(ctx){
 	gradient.addColorStop(0, this.trackPanelGrdStart);
 	gradient.addColorStop(1, this.trackPanelGrdEnd);
 	ctx.fillStyle = gradient;
-	ctx.fillRect(this.left, this.trackTop, this.panelWidth, this.height - 4);
+	ctx.fillRect(this.left, this.trackTop, this.panelWidth, this.height - this.separatorHeight);
+	
+	// Draw the name of the track
+	ctx.fillStyle = '#fff';
+	ctx.font = '14px sans-serif';
+	ctx.baseLine = 'middle';
+	ctx.fillText(this.track.trackName, this.left + 10, this.trackTop + (this.height / 2));
 	
 	// Small bar at the bottom of the track
 	ctx.fillStyle = '#ececec';
@@ -305,12 +329,14 @@ MixerView.prototype.setMixer = function(mixer){
 }
 
 function MixerChannelView(channelId, mixerView){
+	
 	this.channelId = channelId;
 	this.mixerView = mixerView;
 	
 	var self = this;	
 	// Setup the slider on the page and catch the event for the slider changing
-	$("#mixerChannel"+this.channelId+" > span").each(function() {
+	// On the page the channels are indexed by 1, but really, they are indexed by 0
+	$("#mixerChannel"+(this.channelId+1)+" > span").each(function() {
 		// intiialise at 80%
 		$( this ).empty().slider({
 			value: 80,
@@ -326,5 +352,5 @@ function MixerChannelView(channelId, mixerView){
 
 MixerChannelView.prototype.sliderSetVolume = function(value){
 	// Slider value changed
-	this.mixerView.mixer.setChannelVolume(this.channelId, value / 10);
+	this.mixerView.mixer.setChannelVolume(this.channelId , value / 100);
 }
