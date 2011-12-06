@@ -76,6 +76,8 @@
 			#mixer span { height:120px; float:left; margin:15px; }
 			#mixerContainer { margin: 1em; position: absolute; top: 400px; left: 10px; }
 			.channel {float: left; padding: 0; margin: 0 0 0 -1; border: solid 1px #efefef; }
+			#eqContainer { margin: 1em; position: absolute; top: 400px; left: 410px; }
+			#eq span { height:120px; float:left; margin:15px; }
 			
 			
 		</style>
@@ -117,6 +119,38 @@
 					<span>80</span>
 				</div>
 				<!-- Eq and other settings for each channel -->
+			</div>
+		</div>
+		<div id="eqContainer"  class="ui-widget-content ui-corner-all">
+			<div id="eq">
+				<div id="eqLowShelfGain" class="channel">
+					<span></span>
+				</div>
+				<div id="eqLowShelfHz" class="channel">
+					<span></span>
+				</div>
+				
+				<div id="eqLowMidBandGain" class="channel">
+					<span></span>
+				</div>
+				<div id="eqLowMidBandfHz" class="channel">
+					<span></span>
+				</div>
+				
+				<div id="eqHiMidBandGain" class="channel">
+					<span></span>
+				</div>
+				<div id="eqHiMidBandHz" class="channel">
+					<span></span>
+				</div>
+				
+				<div id="eqHiShelfGain" class="channel">
+					<span></span>
+				</div>
+				<div id="eqHiShelfHz" class="channel">
+					<span></span>
+				</div>
+				
 			</div>
 		</div>
 	</body>
