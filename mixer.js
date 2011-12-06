@@ -44,20 +44,43 @@ function MixerChannel(mixer){
 	
 	//this.panner = this.mixer.audio.createPanner();
 	
-	// Low pass filter
-	//this.lpFilter = this.mixer.audio.createBiquadFilter();
-	//this.lpFilter.type = this.lpFilter.LOWPASS;
-	//this.lpFilter.frequency.value = 100;
+	// Low shelf filter
+	this.lowShelf = this.mixer.audio.createBiquadFilter();
+	this.lowShelf.type = this.lowShelf.LOWSHELF;
+	this.lowShelf.frequency.value = 154.0;
+	this.lowShelf.gain.value = 0;
+	
+	// low mid band
+	this.lowMidBand = this.mixer.audio.createBiquadFilter();
+	this.lowMidBand.type = this.lowMidBand.PEAKING;
+	this.lowMidBand.frequency.value = 632.0;
+	this.lowMidBand.gain.value = 0;
+	
+	// high mid band
+	this.hiMidBand = this.mixer.audio.createBiquadFilter();
+	this.hiMidBand.type = this.hiMidBand.PEAKING;
+	this.hiMidBand.frequency.value = 2050.0;
+	this.hiMidBand.gain.value = 0;
+	
+	// high shelf
+	this.hiShelf = this.mixer.audio.createBiquadFilter();
+	this.hiShelf.type = this.hiShelf.HIGHSHELF;
+	this.hiShelf.frequency.value = 5750;
+	this.hiShelf.gain.value = 0;
 	
 	// Main channel volume
 	this.volume = this.mixer.audio.createGainNode();
 	
-	//this.lpFilter.connect(this.volume);
-	//this.panner.connect(this.volume);
+	// Connect all the nodes
+	// Loshelf -> LowMid -> HighMid -> HighShelf
+	this.lowShelf.connect(this.hiShelf);
+	//this.lowMidBand.connect(this.hiShelf);
+	//this.hiMidBand.connect(this.hiShelf);
+	this.hiShelf.connect(this.volume);
 	
-	//this.input = this.panner;
-    //this.input = this.lpFilter;
-	this.input = this.volume;
+	
+	this.input = this.lowShelf;
+	//this.input = this.volume;
 	this.output = this.volume;
 }
 
