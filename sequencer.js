@@ -54,7 +54,7 @@ Sequencer.prototype.addTrack = function(trackName, url){
 	this.notifyEventListeners(e);
 	
 	// If no track is selected, then select this one.
-	if(!this.selected){
+	if(!this.selectedTrack){
 		this.selectedTrack = track;
 		track.selected = true;
 	}
@@ -64,7 +64,7 @@ Sequencer.prototype.addTrack = function(trackName, url){
 }
 
 Sequencer.prototype.selectTrack = function(trackIndex){
-	if(trackIndex < this.tracks.length && trackIndex > 0){
+	if(trackIndex < this.tracks.length && trackIndex >= 0){
 		var newSelection = this.tracks[trackIndex];
 		if(newSelection != this.selectedTrack){
 			if(this.selectedTrack){

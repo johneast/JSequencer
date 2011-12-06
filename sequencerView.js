@@ -28,8 +28,8 @@ function SequencerView(){
 	this.bgColor = '#bbb';
 	
 	this.topBarGrdStart = '#F2F2F2';
-	this.topBarGrdMid = '#CECECE';
-	this.topBarGrdEnd = '#ADAEAF';
+	this.topBarGrdMid = '#CFCFCF';
+	this.topBarGrdEnd = '#8D8E8F';
 	this.topBarUnderline = '#919191';
 	this.topBarHeight = 12;
 	this.trackPanelWidth = 125;
@@ -61,6 +61,16 @@ function SequencerView(){
 	
 	
 	this.redraw();
+}
+
+SequencerView.prototype.findViewForTrack = function(track){
+	for(var i = 0; i < this.trackViews.length; i++){
+		var tv = this.trackViews[i];
+		if(tv.track == track){
+			return tv;
+		}
+	}
+	return null;
 }
 
 SequencerView.prototype.canvasClick = function(event){
@@ -103,8 +113,20 @@ SequencerView.prototype.trackPanelClick = function(y){
 	}
 }
 
-SequencerView.prototype.trackSelectionChange = function(e){
-	alert("Track selection change");
+SequencerView.prototype.trackSelected = function(e){
+	var tv = this.findViewForTrack(e.data);
+	if(tv){
+		tv.dirty = true;
+	}
+	//this.redrawTracks();
+}
+
+SequencerView.prototype.trackUnselected = function(e){
+	var tv = this.findViewForTrack(e.data);
+	if(tv){
+		tv.dirty = true;
+	}
+	// The track selected event should follow soon. Only redraw when that arrives
 }
 
 SequencerView.prototype.redraw = function(){
@@ -157,7 +179,11 @@ SequencerView.prototype.setSequencer = function(sequencer){
 	});
 	
 	this.sequencer.addEventListener("trackSelected", function(e){
-		sv.trackSelectionChange(e);
+		sv.trackSelected(e);
+	});
+	
+	this.sequencer.addEventListener("trackUnselected", function(e){
+		sv.trackUnselected(e);
 	});
 }
 
@@ -237,12 +263,20 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	this.height = this.sequencerView.trackHeight;
 	this.panelWidth = this.sequencerView.trackPanelWidth;
 	this.separatorHeight = this.sequencerView.trackSeparatorHeight;
+	this.selectedColor = '#F7FF03';
+	this.unselectedColor = '#EDEDE6';
+	this.bgSelectecColor = '#fff';
+	this.bgUnselectedColor = this.sequencerView.bgColor;
 	
 }
 
 SequencerTrackView.prototype.redraw = function(ctx){
 	logDebug('Drawing track '+this.track.trackName);
 	logDebug('    - top = '+this.trackTop);
+	
+	// Track background
+	ctx.fillStyle = this.track.selected ? this.bgSelectedColor : this.bgUnselectedColor;
+	ctx.fillRect(this.left, this.trackTop, this.sequencerView.width, this.height);
 	
 	// Draw the panel on the left
 	var panelBtm = this.trackTop + this.height - 4;
@@ -251,6 +285,10 @@ SequencerTrackView.prototype.redraw = function(ctx){
 	gradient.addColorStop(1, this.trackPanelGrdEnd);
 	ctx.fillStyle = gradient;
 	ctx.fillRect(this.left, this.trackTop, this.panelWidth, this.height - this.separatorHeight);
+	
+	// Draw the selection indicator
+	ctx.fillStyle = this.track.selected ? this.selectedColor : this.unselectedColor;
+	ctx.fillRect(this.left, this.trackTop, 4, this.height - this.separatorHeight);
 	
 	// Draw the name of the track
 	ctx.fillStyle = '#fff';

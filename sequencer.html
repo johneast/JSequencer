@@ -18,48 +18,20 @@
 			var uiTime;
 			$(function(){
 				// Page ready.
-				
-				// Set up the UI. Initialise the canvas and the mixer
-				/*var canvas = $("#seqBg")[0];
-				var context = canvas.getContext('2d');
-				
-				context.fillStyle = '#bbb';
-  				context.fillRect(0, 0, canvas.width, canvas.height);
-				
-				var trackHeight = 44;
-				for(var i = 0; i < 8; i++){
-					var y0 = i * trackHeight;
-					var y1 = y0 + trackHeight;
-					logDebug('i = '+i+', y0 = '+y0+', y1 = '+y1);
-					// Color fill for left hand panel of track
-					var gradient = context.createLinearGradient(0, y0, 0, y1 - 4);
-					gradient.addColorStop(0, '#6D92B0');
-					gradient.addColorStop(1, '#435F75');
-					context.fillStyle = gradient;
-					context.fillRect(0, y0, 125, trackHeight - 4);
-
-					// Small bar at the bottom of the track
-					context.fillStyle = '#ececec';
-					context.strokeStyle = '#888';
-					context.fillRect(0, y1 - 4 + 0.5, canvas.width, 3);
-					context.strokeRect(0, y1 - 4 + 0.5, canvas.width, 3);
-				}*/
-				
-				// Initialise the sequencer by loading the audio
-				
+				// Initialise the sequencer, mixer and their views
 				sequencer = new Sequencer();
 				sequencerView = new SequencerView();
 				sequencer.attachView(sequencerView);
-				
 				sequencer.mixer.attachView(new MixerView(8));
 				
-				//sequencer.addTrack('channel1','../yourloveremains.mp3');
+				// load the audio
 				sequencer.addTrack('drums','music/drums.ogg');
 				sequencer.addTrack('bass', 'music/bass.ogg');
 				sequencer.addTrack('gtr1','music/gtr1.ogg');
 				sequencer.addTrack('gtr2','music/gtr2');
 				sequencer.addTrack('lead gtr', 'music/lead-gtr.ogg');
 				sequencer.addTrack('acoustic','music/acoustic.ogg');
+
 				// Start the ui timer
 				startTimer();
 
