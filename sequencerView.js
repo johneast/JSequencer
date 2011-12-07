@@ -83,7 +83,7 @@ SequencerView.prototype.canvasClick = function(event){
 		this.topBarClick(x);
 	}else if(x < this.trackPanelWidth) {
 		// Clicked in the panels on the left.
-		this.trackPanelClick(y);
+		this.trackPanelClick(x, y);
 	}
 }
 
@@ -103,11 +103,13 @@ SequencerView.prototype.topBarClick = function(x){
 	}
 }
 
-SequencerView.prototype.trackPanelClick = function(y){
+SequencerView.prototype.trackPanelClick = function(x, y){
 	// Find which track was clicked
 	for(var i = 0; i < this.trackViews.length; i++){
 		var tv = this.trackViews[i];
 		if(y >= tv.trackTop && y < (tv.trackTop + (tv.height - this.trackSeparatorHeight))){
+			// pass on to the track view
+			tv.click(x - tv.left, y - tv.trackTop);
 			this.sequencer.selectTrack(i);
 			return;
 		}
@@ -275,12 +277,19 @@ function SequencerTrackView(sequencerView, sequencerTrack){
 	this.bgSelectecColor = '#fff';
 	this.bgUnselectedColor = this.sequencerView.bgColor;
 	
+	this.soloColor = '#FF7700';
+	this.unsoloColor = '#f2f2f2';
+	
+	this.soloBtnWidth = 12;
+	this.soloBtnHeight = 12;
+	
+	this.soloBtnLeft = this.panelWidth - this.soloBtnWidth - 4 + this.trackTop;
+	this.soloBtnTop = ((this.height - this.separatorHeight) / 2) - (this.soloBtnHeight / 2);
+	
 }
 
 SequencerTrackView.prototype.redraw = function(ctx){
-	logDebug('Drawing track '+this.track.trackName);
-	logDebug('    - top = '+this.trackTop);
-	
+
 	// Track background
 	ctx.fillStyle = this.track.selected ? this.bgSelectedColor : this.bgUnselectedColor;
 	ctx.fillRect(this.left, this.trackTop, this.sequencerView.width, this.height);
@@ -302,6 +311,18 @@ SequencerTrackView.prototype.redraw = function(ctx){
 	ctx.font = '14px sans-serif';
 	ctx.baseLine = 'middle';
 	ctx.fillText(this.track.trackName, this.left + 10, this.trackTop + (this.height / 2));
+	
+	// Draw the solo button
+	var trackSolo = this.sequencerView.sequencer.mixer.getMixerChannel(this.track.trackNumber).solo;
+	var gradient = ctx.createLinearGradient(this.soloBtnLeft, 
+		this.soloBtnTop + this.trackTop, this.soloBtnLeft, this.soloBtnTop + this.trackTop + this.soloBtnHeight);
+	
+	var soloClr = trackSolo ? this.soloColor : this.unsoloColor;
+	gradient.addColorStop(0, soloClr);
+	gradient.addColorStop(0.5, this.unsoloColor);
+	gradient.addColorStop(1, soloClr);
+	ctx.fillStyle = gradient;
+	ctx.fillRect(this.soloBtnLeft, this.soloBtnTop + this.trackTop, this.soloBtnWidth, this.soloBtnHeight);
 	
 	// Small bar at the bottom of the track
 	ctx.fillStyle = '#ececec';
@@ -353,6 +374,20 @@ SequencerTrackView.prototype.redraw = function(ctx){
 		ctx.closePath();
 	}
 	this.dirty = false;
+}
+
+SequencerTrackView.prototype.click = function(x, y){
+	// Has the solo button been pressed
+	if(x >= this.soloBtnLeft && x < (this.soloBtnLeft + this.soloBtnWidth)){
+		if(y >= this.soloBtnTop && y < (this.soloBtnTop + this.soloBtnHeight)){
+			this.soloBtnClick();
+		}
+	}
+}
+
+SequencerTrackView.prototype.soloBtnClick = function(){
+	this.track.sequencer.mixer.toggleSoloForChannel(this.track.trackNumber);
+	this.dirty = true;
 }
 
 function MixerView(numberOfChannels){

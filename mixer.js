@@ -3,6 +3,7 @@ function Mixer(audioContext){
 	this.numberOfChannels = 32;
 	this.channels = new Array(this.numberOfChannels);
 	this.selected = 0;
+	this.soloChannels = new Array();
 }
 
 Mixer.prototype.getMixerChannel = function(number){
@@ -66,7 +67,45 @@ Mixer.prototype.setHiShelfGain = function(gain){
 	}
 }
 
+Mixer.prototype.toggleSoloForChannel = function(channelNumber){
+	var mc = this.getMixerChannel(channelNumber);
+	if(mc){
+		mc.solo = !mc.solo;
+		if(mc.solo){
+			this.soloChannels.push(mc);
+		}else{
+			for(var i = 0; i < this.soloChannels.length; i++){
+				if(this.soloChannels[i] == mc){
+					this.soloChannels.splice(i);
+					break;
+				}
+			}
+		}
+		this.applySolos()
+	}
+}
 
+
+Mixer.prototype.applySolos = function(){
+	// Any channel that's not solo'd should be muted.
+	for(var i = 0; i < this.channels.length; i++){
+		var mc = this.channels[i];
+		if(mc){
+			if(this.soloChannels.length == 0){
+				// No channels solo'd, make sure every channel is unmuted
+				if(mc.channelVolume != mc.volume.gain.value){
+					mc.volume.gain.value = mc.channelVolume;
+				}
+			}else{
+				if(!mc.solo){
+					mc.volume.gain.value = 0;
+				}else{
+					mc.volume.gain.value = mc.channelVolume;
+				}
+			}
+		}
+	}
+}
 
 function MixerChannel(mixer){
 
@@ -103,8 +142,8 @@ function MixerChannel(mixer){
 	
 	// Connect all the nodes
 	// Loshelf -> LowMid -> HighMid -> HighShelf
-	this.lowShelf.connect(this.lowMidBand);
-	this.lowMidBand.connect(this.hiShelf);
+	this.lowShelf.connect(this.hiShelf);
+//	this.lowMidBand.connect(this.hiShelf);
 	//this.hiMidBand.connect(this.hiShelf);
 	this.hiShelf.connect(this.volume);
 	
@@ -112,8 +151,11 @@ function MixerChannel(mixer){
 	this.input = this.lowShelf;
 	//this.input = this.volume;
 	this.output = this.volume;
+	this.solo = false;
+	this.channelVolume = this.volume.gain.value;
 }
 
 MixerChannel.prototype.setVolume = function(volume){
+	this.channelVolume = volume;
 	this.volume.gain.value = volume;
 }
