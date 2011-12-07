@@ -38,6 +38,36 @@ Mixer.prototype.setChannelVolume = function(channelNumber, volume){
 	}
 }
 
+Mixer.prototype.selectChannel = function(channelNumber){
+	this.selected = this.getMixerChannel(channelNumber);
+}
+
+Mixer.prototype.setLowShelfGain = function(gain){
+	if(this.selected){
+		this.selected.lowShelf.gain.value = gain;
+	}
+}
+
+Mixer.prototype.setLowMidBandGain = function(gain){
+	if(this.selected){
+		this.selected.lowMidBand.gain.value = gain;
+	}
+}
+
+Mixer.prototype.setHiMidBandGain = function(gain){
+	if(this.selected){
+		this.selected.hiMidBand.gain.value = gain;
+	}
+}
+
+Mixer.prototype.setHiShelfGain = function(gain){
+	if(this.selected){
+		this.selected.hiShelf.gain.value = gain;
+	}
+}
+
+
+
 function MixerChannel(mixer){
 
 	this.mixer = mixer;
@@ -73,8 +103,8 @@ function MixerChannel(mixer){
 	
 	// Connect all the nodes
 	// Loshelf -> LowMid -> HighMid -> HighShelf
-	this.lowShelf.connect(this.hiShelf);
-	//this.lowMidBand.connect(this.hiShelf);
+	this.lowShelf.connect(this.lowMidBand);
+	this.lowMidBand.connect(this.hiShelf);
 	//this.hiMidBand.connect(this.hiShelf);
 	this.hiShelf.connect(this.volume);
 	

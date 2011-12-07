@@ -76,6 +76,8 @@ Sequencer.prototype.selectTrack = function(trackIndex){
 			this.selectedTrack.selected = true;
 			this.notifyEventListeners({type:"trackSelected", data:this.selectedTrack});
 		}
+		
+		this.mixer.selectChannel(trackIndex);
 	}
 }
 

@@ -109,6 +109,7 @@ SequencerView.prototype.trackPanelClick = function(y){
 		var tv = this.trackViews[i];
 		if(y >= tv.trackTop && y < (tv.trackTop + (tv.height - this.trackSeparatorHeight))){
 			this.sequencer.selectTrack(i);
+			return;
 		}
 	}
 }
@@ -117,6 +118,12 @@ SequencerView.prototype.trackSelected = function(e){
 	var tv = this.findViewForTrack(e.data);
 	if(tv){
 		tv.dirty = true;
+		
+		// Update the EQ settings for this track
+		if(this.sequencer.mixer.mixerView){
+		
+			this.sequencer.mixer.mixerView.updateEQSettingsForChannel(e.data.trackNumber);
+		}
 	}
 	//this.redrawTracks();
 }
@@ -359,11 +366,87 @@ function MixerView(numberOfChannels){
 		var cv = new MixerChannelView(i,this);
 		this.channelViews.push(cv);
 	}
+	
+	this.setupEq();
 
 }	
 
 MixerView.prototype.setMixer = function(mixer){
 	this.mixer = mixer;
+}
+
+MixerView.prototype.setupEq = function(){
+	var self = this;
+	$('#eqLowShelfGain > span').each(function() {
+		$(this).empty().slider({
+			value: 50,
+			range: "min",
+			animate: true,
+			orientation: "vertical",
+			slide: function (event, ui){
+				self.mixer.setLowShelfGain((ui.value - 50) / 2.5);
+			}
+		});
+	});
+	
+	$('#eqLowMidBandGain > span').each(function() {
+		$(this).empty().slider({
+			value: 50,
+			range: "min",
+			animate: true,
+			orientation: "vertical",
+			slide: function (event, ui){
+				self.mixer.setLowMidBandGain((ui.value - 50) / 2.5);
+			}
+		});
+	});
+	
+	$('#eqHiMidBandGain > span').each(function() {
+		$(this).empty().slider({
+			value: 50,
+			range: "min",
+			animate: true,
+			orientation: "vertical",
+			slide: function (event, ui){
+				self.mixer.setHiMidBandGain((ui.value - 50) / 2.5);
+			}
+		});
+	});
+		
+	$('#eqHiShelfGain > span').each(function() {
+		$(this).empty().slider({
+			value: 50,
+			range: "min",
+			animate: true,
+			orientation: "vertical",
+			slide: function (event, ui){
+				self.mixer.setHiShelfGain((ui.value - 50) / 2.5);
+			}
+		});
+	});
+};
+
+MixerView.prototype.updateEQSettingsForChannel = function(channelNumber){
+	var channel = this.mixer.getMixerChannel(channelNumber);
+	if(channel){
+		// Set the value of the low shelf gain.
+		$('#eqLowShelfGain > span').each(function() {
+			$(this).slider("value", (channel.lowShelf.gain.value * 2.5) + 50);
+		});
+		
+		$('#eqLowMidBandGain > span').each(function() {
+			$(this).slider("value", (channel.lowMidBand.gain.value * 2.5) + 50);
+		});
+		
+		$('#eqHiMidBandGain > span').each(function() {
+			$(this).slider("value", (channel.hiMidBand.gain.value * 2.5) + 50);
+		});
+		$('#eqHiShelfGain > span').each(function() {
+			$(this).slider("value", (channel.hiShelf.gain.value * 2.5) + 50);
+		});
+		
+	}
+
 }
 
 function MixerChannelView(channelId, mixerView){
@@ -392,3 +475,4 @@ MixerChannelView.prototype.sliderSetVolume = function(value){
 	// Slider value changed
 	this.mixerView.mixer.setChannelVolume(this.channelId , value / 100);
 }
+
